@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCore Font | Copy Center</title>
+    <title>DevCore Font | Integrated Edition</title>
+    <!-- Font UI Utama -->
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- MODAL PAGE (Muncul saat tombol ditekan) -->
+    <!-- HALAMAN SALIN (MODAL) -->
     <div id="copy-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 id="modal-title">Salin Kode</h3>
@@ -18,28 +19,87 @@
             </div>
             <div class="modal-actions">
                 <button class="btn btn-p" id="btn-final-copy">Salin Teks Sekarang</button>
-                <button class="btn btn-close" onclick="tutupHalaman()">Kembali / Tutup</button>
+                <button class="btn btn-close" onclick="tutupHalaman()">Batal / Kembali</button>
             </div>
         </div>
     </div>
 
+    <!-- NOTIFIKASI -->
     <div id="toast">✅ Berhasil Disalin!</div>
 
     <nav>
-        <div class="logo">DevCore<span>Font</span></div>
+        <div class="nav-content">
+            <div class="logo">DevCore<span>Font</span></div>
+        </div>
     </nav>
 
     <div class="container">
         <header>
             <h1>Typography Library</h1>
-            <p>Pilih font dan dapatkan kodenya di halaman salin.</p>
+            <p>Pilih font premium. Data terintegrasi langsung (Zero Latency).</p>
         </header>
+        
+        <!-- Grid Font -->
         <div id="font-grid" class="grid"></div>
     </div>
 
     <script>
-        // 1. FUNGSI UNTUK MEMBUKA HALAMAN COPY
-        function bukaHalamanCopy(teks, judul) {
+        // --- DATA FONT LANGSUNG DI SINI (AUTO FIX GAGAL FETCH) ---
+        const fontData = [
+            {
+                "name": "Satoshi",
+                "import": "@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');",
+                "family": "'Satoshi', sans-serif"
+            },
+            {
+                "name": "Clash Display",
+                "import": "@import url('https://api.fontshare.com/v2/css?f[]=clash-display@600,400&display=swap');",
+                "family": "'Clash Display', sans-serif"
+            },
+            {
+                "name": "General Sans",
+                "import": "@import url('https://api.fontshare.com/v2/css?f[]=general-sans@600,400&display=swap');",
+                "family": "'General Sans', sans-serif"
+            },
+            {
+                "name": "Cabinet Grotesk",
+                "import": "@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,400&display=swap');",
+                "family": "'Cabinet Grotesk', sans-serif"
+            },
+            {
+                "name": "Ranade",
+                "import": "@import url('https://api.fontshare.com/v2/css?f[]=ranade@700,400&display=swap');",
+                "family": "'Ranade', sans-serif"
+            }
+        ];
+
+        // --- LOGIC TAMPILAN ---
+        const grid = document.getElementById('font-grid');
+
+        function renderFonts() {
+            fontData.forEach(f => {
+                // Tambahkan preview font ke browser
+                const s = document.createElement('style');
+                s.innerHTML = f.import;
+                document.head.appendChild(s);
+
+                // Buat Card
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h2 style="font-family: ${f.family}">${f.name}</h2>
+                    <p class="preview" style="font-family: ${f.family}">The quick brown fox jumps over the lazy dog.</p>
+                    <div class="actions">
+                        <button class="btn btn-p" onclick="bukaModal('${f.import}', 'Import Code')">Get @Import</button>
+                        <button class="btn btn-s" onclick="bukaModal('font-family: ${f.family};', 'CSS Family')">Get CSS</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- LOGIC MODAL & SALIN ---
+        function bukaModal(teks, judul) {
             const modal = document.getElementById('copy-modal');
             const display = document.getElementById('code-display');
             const title = document.getElementById('modal-title');
@@ -49,20 +109,31 @@
             title.innerText = "Copy " + judul;
             modal.classList.add('active');
 
-            // Set fungsi tombol salin di dalam modal
+            // Tombol Salin di dalam modal
             btnCopy.onclick = function() {
-                // Proses Salin Manual yang paling ampuh
+                // Seleksi teks di textarea
                 display.select();
-                display.setSelectionRange(0, 99999);
-                document.execCommand('copy');
-                
-                // Munculkan notifikasi
-                const t = document.getElementById("toast");
-                t.className = "show";
-                setTimeout(() => { 
-                    t.className = ""; 
-                    tutupHalaman(); // Tutup halaman otomatis setelah salin
-                }, 1500);
+                display.setSelectionRange(0, 99999); // Untuk Mobile
+
+                // Eksekusi salin
+                let sukses = false;
+                try {
+                    sukses = document.execCommand('copy');
+                } catch (err) {
+                    sukses = false;
+                }
+
+                if (sukses || navigator.clipboard) {
+                    if(!sukses) navigator.clipboard.writeText(teks);
+                    
+                    // Notifikasi sukses
+                    const t = document.getElementById("toast");
+                    t.className = "show";
+                    setTimeout(() => { 
+                        t.className = ""; 
+                        tutupHalaman(); 
+                    }, 1500);
+                }
             };
         }
 
@@ -70,33 +141,8 @@
             document.getElementById('copy-modal').classList.remove('active');
         }
 
-        // 2. LOAD DATA FONT DARI BACKEND
-        async function loadFonts() {
-            const res = await fetch('/ambil-data-font');
-            const fonts = await res.json();
-            const grid = document.getElementById('font-grid');
-            grid.innerHTML = '';
-
-            fonts.forEach(f => {
-                // Inject font preview
-                const s = document.createElement('style');
-                s.innerHTML = f.import;
-                document.head.appendChild(s);
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <h2 style="font-family: ${f.family}">${f.name}</h2>
-                    <p class="preview" style="font-family: ${f.family}">The quick brown fox jumps over the lazy dog.</p>
-                    <div class="actions">
-                        <button class="btn btn-p" onclick="bukaHalamanCopy('${f.import}', 'Import Code')">Get @Import</button>
-                        <button class="btn btn-s" onclick="bukaHalamanCopy('font-family: ${f.family};', 'CSS Family')">Get CSS</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-        loadFonts();
+        // Jalankan Render
+        renderFonts();
     </script>
 </body>
 </html>
