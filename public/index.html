@@ -2,14 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DevCore Font | Fixed Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCore Font | Copy Center</title>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="toast">✅ Teks Berhasil Disalin!</div>
+    <!-- MODAL PAGE (Muncul saat tombol ditekan) -->
+    <div id="copy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Salin Kode</h3>
+            <div class="code-box">
+                <textarea id="code-display" readonly></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-p" id="btn-final-copy">Salin Teks Sekarang</button>
+                <button class="btn btn-close" onclick="tutupHalaman()">Kembali / Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">✅ Berhasil Disalin!</div>
 
     <nav>
         <div class="logo">DevCore<span>Font</span></div>
@@ -18,63 +32,46 @@
     <div class="container">
         <header>
             <h1>Typography Library</h1>
-            <p>Jika klik tidak menyalin, tekan lama pada tombol untuk copy manual.</p>
+            <p>Pilih font dan dapatkan kodenya di halaman salin.</p>
         </header>
-        
-        <div id="font-grid" class="grid">
-            <!-- Data Masuk Sini -->
-        </div>
+        <div id="font-grid" class="grid"></div>
     </div>
 
-    <!-- Hidden Input khusus untuk Mobile Fallback -->
-    <input type="text" id="copy-engine" style="position: fixed; top: -1000px; left: -1000px;" readonly>
-
     <script>
-        // FUNGSI UTAMA SALIN (NUKLIR VERSION)
-        function salinTeks(teks) {
-            // 1. Coba Cara Modern (Hanya jalan di HTTPS/Vercel)
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(teks).then(() => {
-                    notifikasi();
-                }).catch(() => {
-                    caraManual(teks);
-                });
-            } else {
-                // 2. Cara Manual (Untuk HP yang keras kepala)
-                caraManual(teks);
-            }
+        // 1. FUNGSI UNTUK MEMBUKA HALAMAN COPY
+        function bukaHalamanCopy(teks, judul) {
+            const modal = document.getElementById('copy-modal');
+            const display = document.getElementById('code-display');
+            const title = document.getElementById('modal-title');
+            const btnCopy = document.getElementById('btn-final-copy');
+
+            display.value = teks;
+            title.innerText = "Copy " + judul;
+            modal.classList.add('active');
+
+            // Set fungsi tombol salin di dalam modal
+            btnCopy.onclick = function() {
+                // Proses Salin Manual yang paling ampuh
+                display.select();
+                display.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                
+                // Munculkan notifikasi
+                const t = document.getElementById("toast");
+                t.className = "show";
+                setTimeout(() => { 
+                    t.className = ""; 
+                    tutupHalaman(); // Tutup halaman otomatis setelah salin
+                }, 1500);
+            };
         }
 
-        function caraManual(teks) {
-            const input = document.getElementById('copy-engine');
-            input.value = teks;
-            input.select();
-            input.setSelectionRange(0, 99999); // Untuk iOS
-
-            try {
-                const berhasil = document.execCommand('copy');
-                if (berhasil) {
-                    notifikasi();
-                } else {
-                    // JALUR TERAKHIR: Prompt Manual jika semua gagal
-                    window.prompt("Gagal salin otomatis. Silakan salin teks di bawah ini:", teks);
-                }
-            } catch (err) {
-                window.prompt("Copy manual:", teks);
-            }
+        function tutupHalaman() {
+            document.getElementById('copy-modal').classList.remove('active');
         }
 
-        function notifikasi() {
-            const t = document.getElementById("toast");
-            t.className = "show";
-            setTimeout(() => { t.className = ""; }, 2500);
-            
-            // Berikan getaran pendek di HP (Hanya Android)
-            if (navigator.vibrate) navigator.vibrate(50);
-        }
-
-        // LOAD DATA
-        async function loadData() {
+        // 2. LOAD DATA FONT DARI BACKEND
+        async function loadFonts() {
             const res = await fetch('/ambil-data-font');
             const fonts = await res.json();
             const grid = document.getElementById('font-grid');
@@ -92,14 +89,14 @@
                     <h2 style="font-family: ${f.family}">${f.name}</h2>
                     <p class="preview" style="font-family: ${f.family}">The quick brown fox jumps over the lazy dog.</p>
                     <div class="actions">
-                        <button class="btn btn-p" onclick="salinTeks('${f.import}')">@Import</button>
-                        <button class="btn btn-s" onclick="salinTeks('font-family: ${f.family};')">CSS</button>
+                        <button class="btn btn-p" onclick="bukaHalamanCopy('${f.import}', 'Import Code')">Get @Import</button>
+                        <button class="btn btn-s" onclick="bukaHalamanCopy('font-family: ${f.family};', 'CSS Family')">Get CSS</button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
-        loadData();
+        loadFonts();
     </script>
 </body>
 </html>
