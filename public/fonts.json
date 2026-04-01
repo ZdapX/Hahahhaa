@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Satoshi",
+    "import": "@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');",
+    "family": "'Satoshi', sans-serif"
+  },
+  {
+    "name": "Clash Display",
+    "import": "@import url('https://api.fontshare.com/v2/css?f[]=clash-display@600,400&display=swap');",
+    "family": "'Clash Display', sans-serif"
+  },
+  {
+    "name": "General Sans",
+    "import": "@import url('https://api.fontshare.com/v2/css?f[]=general-sans@600,400&display=swap');",
+    "family": "'General Sans', sans-serif"
+  },
+  {
+    "name": "Cabinet Grotesk",
+    "import": "@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,400&display=swap');",
+    "family": "'Cabinet Grotesk', sans-serif"
+  },
+  {
+    "name": "Ranade",
+    "import": "@import url('https://api.fontshare.com/v2/css?f[]=ranade@700,400&display=swap');",
+    "family": "'Ranade', sans-serif"
+  }
+]
