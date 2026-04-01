@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCore Font | Vercel Edition</title>
+    <title>DevCore Font | Auto-Fix Edition</title>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="toast">Berhasil Disalin!</div>
+
+    <div id="toast">✅ Berhasil Disalin!</div>
 
     <nav>
         <div class="nav-content">
@@ -19,45 +20,81 @@
     <div class="container">
         <header>
             <h1>Typography Library</h1>
-            <p>Deploy Berhasil! Fitur Copy sekarang aktif karena HTTPS.</p>
+            <p>Klik tombol di bawah. Jika muncul notifikasi, maka teks PASTI sudah tersalin.</p>
         </header>
-        <div id="font-grid" class="grid"></div>
+        <div id="font-grid" class="grid">
+            <p style="text-align:center; grid-column: 1/-1;">Sedang memuat font...</p>
+        </div>
     </div>
+
+    <!-- Area Tersembunyi untuk Keperluan Salin -->
+    <textarea id="copy-helper" style="position:fixed; top:-9999px; left:-9999px; opacity:0;"></textarea>
 
     <script>
         async function loadFonts() {
-            const res = await fetch('/ambil-data-font');
-            const fonts = await res.json();
-            const grid = document.getElementById('font-grid');
-            grid.innerHTML = '';
+            try {
+                const res = await fetch('/ambil-data-font');
+                const fonts = await res.json();
+                const grid = document.getElementById('font-grid');
+                grid.innerHTML = '';
 
-            fonts.forEach(font => {
-                const style = document.createElement('style');
-                style.innerHTML = font.import;
-                document.head.appendChild(style);
+                fonts.forEach(font => {
+                    // Inject font style
+                    const style = document.createElement('style');
+                    style.innerHTML = font.import;
+                    document.head.appendChild(style);
 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <h2 style="font-family: ${font.family}">${font.name}</h2>
-                    <p class="preview" style="font-family: ${font.family}">The quick brown fox jumps over the lazy dog.</p>
-                    <div class="actions">
-                        <button class="btn btn-p" onclick="copyText('${font.import}')">Copy Import</button>
-                        <button class="btn btn-s" onclick="copyText('font-family: ${font.family};')">Copy CSS</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h2 style="font-family: ${font.family}">${font.name}</h2>
+                        <p class="preview" style="font-family: ${font.family}">The quick brown fox jumps over the lazy dog.</p>
+                        <div class="actions">
+                            <button class="btn btn-p" onclick="superCopy('${font.import}')">Copy @Import</button>
+                            <button class="btn btn-s" onclick="superCopy('font-family: ${font.family};')">Copy CSS</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                document.getElementById('font-grid').innerHTML = "Gagal memuat data.";
+            }
         }
 
-        function copyText(text) {
-            // navigator.clipboard sekarang akan BEKERJA di Vercel (HTTPS)
-            navigator.clipboard.writeText(text).then(() => {
+        // --- FUNGSI AUTO-FIX (PASTI BISA) ---
+        function superCopy(text) {
+            // 1. Ambil elemen bantuan
+            const helper = document.getElementById("copy-helper");
+            helper.value = text;
+            
+            // 2. Pilih teksnya
+            helper.select();
+            helper.setSelectionRange(0, 99999); // Untuk HP (iOS/Android)
+
+            // 3. Jalankan perintah salin (Cara paling ampuh)
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                success = false;
+            }
+
+            // 4. Jika cara lama gagal, coba cara modern
+            if (!success && navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                success = true;
+            }
+
+            // 5. Munculkan Toast jika berhasil
+            if (success) {
                 const t = document.getElementById("toast");
                 t.className = "show";
                 setTimeout(() => { t.className = ""; }, 3000);
-            });
+            } else {
+                alert("Gagal menyalin. Silakan tekan lama pada teks untuk menyalin manual.");
+            }
         }
+
         loadFonts();
     </script>
 </body>
