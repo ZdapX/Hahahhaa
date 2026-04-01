@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCore Font | Vercel Edition</title>
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="toast">Berhasil Disalin!</div>
+
+    <nav>
+        <div class="nav-content">
+            <div class="logo">DevCore<span>Font</span></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Typography Library</h1>
+            <p>Deploy Berhasil! Fitur Copy sekarang aktif karena HTTPS.</p>
+        </header>
+        <div id="font-grid" class="grid"></div>
+    </div>
+
+    <script>
+        async function loadFonts() {
+            const res = await fetch('/ambil-data-font');
+            const fonts = await res.json();
+            const grid = document.getElementById('font-grid');
+            grid.innerHTML = '';
+
+            fonts.forEach(font => {
+                const style = document.createElement('style');
+                style.innerHTML = font.import;
+                document.head.appendChild(style);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h2 style="font-family: ${font.family}">${font.name}</h2>
+                    <p class="preview" style="font-family: ${font.family}">The quick brown fox jumps over the lazy dog.</p>
+                    <div class="actions">
+                        <button class="btn btn-p" onclick="copyText('${font.import}')">Copy Import</button>
+                        <button class="btn btn-s" onclick="copyText('font-family: ${font.family};')">Copy CSS</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function copyText(text) {
+            // navigator.clipboard sekarang akan BEKERJA di Vercel (HTTPS)
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById("toast");
+                t.className = "show";
+                setTimeout(() => { t.className = ""; }, 3000);
+            });
+        }
+        loadFonts();
+    </script>
+</body>
+</html>
