@@ -8,13 +8,12 @@ app.use(cors());
 
 app.get('/ambil-data-font', (req, res) => {
     try {
-        // process.cwd() adalah cara terbaik di Vercel untuk mencari root folder
         const filePath = path.join(process.cwd(), 'public', 'fonts.json');
         const jsonData = fs.readFileSync(filePath, 'utf-8');
         res.setHeader('Content-Type', 'application/json');
-        res.send(jsonData);
+        res.status(200).send(jsonData);
     } catch (error) {
-        res.status(500).json({ error: "File fonts.json tidak ditemukan" });
+        res.status(500).json({ error: "Data tidak ditemukan" });
     }
 });
 
