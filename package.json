@@ -1,9 +1,5 @@
 {
-  "name": "devcore-final-fix",
+  "name": "devcore-integrated",
   "version": "1.0.0",
-  "main": "api/index.js",
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5"
-  }
+  "dependencies": { "express": "^4.18.2" }
 }
